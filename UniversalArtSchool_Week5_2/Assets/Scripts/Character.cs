@@ -7,6 +7,7 @@ public class Character : MonoBehaviour
     [SerializeField] protected float speed;
     [SerializeField] protected float direction;
     [SerializeField] protected int lifePoint;
+
     public enum MovementType {PatrollingCheckingGround, HeroMovement};
     [SerializeField] protected MovementType movementType;
 
@@ -62,6 +63,7 @@ public class Character : MonoBehaviour
             Debug.Log("StopMoving");
             rb = GetComponent<Rigidbody2D>();
             rb.velocity = new Vector2(rb.velocity.x * 0, rb.velocity.y);
+
         }
     }
 
