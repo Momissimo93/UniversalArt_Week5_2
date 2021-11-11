@@ -5,9 +5,14 @@ using UnityEngine;
 public class Hero : Character
 {
     [SerializeField] int jumpForce;
+    [SerializeField] float raylenght;
+    [SerializeField] GameObject bullet;
+    [SerializeField] Transform firePoint;
+
     private bool facingForward = true;
-    private float speedLocalReference;
     private bool isFiring;
+    private bool isOnGround;
+    private float speedLocalReference;
 
     int ground = 1 << 6;
     BoxCollider2D boxCollider2D;
@@ -20,11 +25,6 @@ public class Hero : Character
         if (GetComponent<BoxCollider2D>())
         {
             boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
-
-            leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
-            rightFoot = new Vector2(boxCollider2D.bounds.max.x, boxCollider2D.bounds.min.y);
-            Debug.Log(leftFoot);
-            EmittingRays();
         }
     }
     void Start()
@@ -38,10 +38,8 @@ public class Hero : Character
         speedLocalReference = speed;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
         checkIfButtonDownPressed();
         EmittingRays();
     }
@@ -49,7 +47,6 @@ public class Hero : Character
     private void FixedUpdate()
     {
         checkIfButtonPressed();
-        Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
     }
 
     void checkIfButtonPressed()
@@ -74,19 +71,17 @@ public class Hero : Character
     {
         if (Input.GetButtonDown("Fire1"))
         {
-            Debug.Log("Fire");
             animator.SetTrigger("fire");
             isFiring = true;
+            Shoot(bullet, firePoint);
         }
         else if (Input.GetButtonUp("Fire1"))
         {
             isFiring = false;
         }
 
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump") && isOnGround)
         {
-            // && ((feet.leftOnGround) || feet.rightOnGround)
-            Debug.Log("Jump");
             animator.SetTrigger("jump");
             Jump(jumpForce);
         }
@@ -112,8 +107,34 @@ public class Hero : Character
     }
     void EmittingRays()
     {
-        //RaycastHit2D leftFootRays = Physics2D.Raycast(leftFoot, Vector2.down, 3f, ground);
+        leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
+        rightFoot = new Vector2(boxCollider2D.bounds.max.x, boxCollider2D.bounds.min.y);
+
+        RaycastHit2D leftFootRays = Physics2D.Raycast(leftFoot, Vector2.down, raylenght, ground);
+        RaycastHit2D rightFootRays = Physics2D.Raycast(rightFoot, Vector2.down, raylenght, ground);
+
+        checkIfGround(leftFootRays, rightFootRays);
+        DrawRay();
+    }
+
+    void checkIfGround(RaycastHit2D lFRays, RaycastHit2D rFRays)
+    {
+        if ((lFRays) || (rFRays))
+        {
+            isOnGround = true;
+        }
+        else
+            isOnGround = false;
+    }
+
+    void DrawRay()
+    {
         Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
-        Debug.Log("EmittingRays");
+        Debug.DrawRay(rightFoot, Vector2.down * 1f, Color.blue);
+    }
+
+    void Shoot(GameObject b, Transform spwaningBulletPosition)
+    {
+        GameObject bullet = Instantiate(b, spwaningBulletPosition.position, spwaningBulletPosition.rotation);
     }
 }
