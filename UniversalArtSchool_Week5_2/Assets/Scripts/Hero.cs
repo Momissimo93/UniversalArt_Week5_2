@@ -15,6 +15,8 @@ public class Hero : Character
     protected Vector2 leftFoot;
     protected Vector2 rightFoot;
 
+    RaycastHit2D rayCastFromLeftFoot;
+
     private void Awake()
     {
         if (GetComponent<BoxCollider2D>())
@@ -23,12 +25,20 @@ public class Hero : Character
 
             leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
             rightFoot = new Vector2(boxCollider2D.bounds.max.x, boxCollider2D.bounds.min.y);
+            rayCastFromLeftFoot = Physics2D.Raycast(leftFoot, Vector2.down, 0.09f, ground);
             Debug.Log(leftFoot);
-            EmittingRays();
         }
     }
     void Start()
     {
+        if (GetComponent<BoxCollider2D>())
+        {
+            boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
+
+            leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
+            rightFoot = new Vector2(boxCollider2D.bounds.max.x, boxCollider2D.bounds.min.y);
+            Debug.Log(leftFoot);
+        }
         if (GetComponent<Animator>())
         {
             animator = gameObject.GetComponent<Animator>();
@@ -41,15 +51,22 @@ public class Hero : Character
     // Update is called once per frame
     void Update()
     {
-        Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
+        rayCastFromLeftFoot = Physics2D.Raycast(leftFoot, Vector2.down, 0.09f, ground);
+        leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
+        Debug.DrawRay(leftFoot, Vector2.down * 10f, Color.blue);
         checkIfButtonDownPressed();
         EmittingRays();
+        if (rayCastFromLeftFoot)
+        {
+            Debug.Log( " Left Foot is on the Ground");
+        }
+
     }
 
     private void FixedUpdate()
     {
         checkIfButtonPressed();
-        Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
+        Debug.DrawRay(leftFoot, Vector2.down * 10f, Color.blue);
     }
 
     void checkIfButtonPressed()
@@ -113,7 +130,7 @@ public class Hero : Character
     void EmittingRays()
     {
         //RaycastHit2D leftFootRays = Physics2D.Raycast(leftFoot, Vector2.down, 3f, ground);
-        Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
+        Debug.DrawRay(leftFoot, Vector2.down * 10f, Color.blue);
         Debug.Log("EmittingRays");
     }
 }
