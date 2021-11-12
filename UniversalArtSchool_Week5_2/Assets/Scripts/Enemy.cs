@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Enemy : Character
 {
-
     private void Awake()
     {
         GetAnimator();
@@ -16,6 +15,8 @@ public class Enemy : Character
         facingForward = true;
         initialPosition = transform.position;
         initialMovementType = movementType;
+        initialSpeed = speed;
+        timeBtwShots = startTimeBtwShots;
     }
     // Update is called once per frame
     void Update()

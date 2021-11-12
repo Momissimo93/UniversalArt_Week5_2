@@ -5,8 +5,8 @@ using UnityEngine;
 public class Hero : Character
 {
     [SerializeField] int jumpForce;
-    [SerializeField] GameObject bullet;
-    [SerializeField] Transform firePoint;
+    //[SerializeField] GameObject bullet;
+    //[SerializeField] Transform firePoint;
 
     private bool isFiring;
     private float speedLocalReference;

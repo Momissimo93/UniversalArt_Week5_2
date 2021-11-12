@@ -316,6 +316,36 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &539547730
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 539547731}
+  m_Layer: 7
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 3306451490063965843, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &539547731
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539547730}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.153, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 866048049}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &541254446
 GameObject:
   m_ObjectHideFlags: 0
@@ -344,7 +374,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 866048049}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &665926191
 GameObject:
@@ -486,6 +516,7 @@ Transform:
   m_LocalPosition: {x: 2.43, y: -1.63, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_Children:
+  - {fileID: 539547731}
   - {fileID: 541254447}
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -508,7 +539,11 @@ MonoBehaviour:
   rayLenghtFromFeet: 0.3
   radius: 1.9
   eyeSightCenterPoint: {fileID: 541254446}
+  bullet: {fileID: 4257045947112957234, guid: 57ecce7865e90314ea4672f844314e90, type: 3}
+  firePoint: {fileID: 539547731}
+  startTimeBtwShots: 2
   movementType: 0
+  target: {fileID: 0}
 --- !u!61 &866048051
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1126,10 +1161,12 @@ MonoBehaviour:
   rayLenghtFromFeet: 0.1
   radius: 0
   eyeSightCenterPoint: {fileID: 0}
-  movementType: 1
-  jumpForce: 4
   bullet: {fileID: 7550575404710190775, guid: b4fc3438c3b124d4d810eda4de448d59, type: 3}
   firePoint: {fileID: 1414162262}
+  startTimeBtwShots: 0
+  movementType: 1
+  target: {fileID: 0}
+  jumpForce: 4
 --- !u!50 &1406833084
 Rigidbody2D:
   serializedVersion: 4

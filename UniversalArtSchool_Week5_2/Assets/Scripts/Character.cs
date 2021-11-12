@@ -10,6 +10,12 @@ public class Character : MonoBehaviour
     [SerializeField] protected float rayLenghtFromFeet;
     [SerializeField] protected float radius;
     [SerializeField] protected GameObject eyeSightCenterPoint;
+    [SerializeField] protected GameObject bullet;
+    [SerializeField] protected Transform firePoint;
+
+    private protected float timeBtwShots;
+    public float startTimeBtwShots;
+
 
     public enum MovementType {PatrollingCheckingGround, HeroMovement, MoveTowardsTarget, GoBackToInitialPosition };
     [SerializeField] protected MovementType movementType;
@@ -22,8 +28,8 @@ public class Character : MonoBehaviour
     protected bool isOnGround;
     protected bool facingForward;
     protected Vector3 initialPosition;
-
-    private Transform Target;
+    protected float initialSpeed;
+    public Transform target;
 
     protected Rigidbody2D rb;
 
@@ -36,13 +42,13 @@ public class Character : MonoBehaviour
 
     void Start()
     {
-
+        //timeBtwShots = startTimeBtwShots;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     protected void GetAnimator()
@@ -100,9 +106,9 @@ public class Character : MonoBehaviour
     }
     private void MoveTowardsTarget()
     {
-        if (Target)
+        if (target)
         {
-            transform.position =  Vector2.MoveTowards(transform.position, Target.position, speed * Time.deltaTime);
+            transform.position =  Vector2.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
         }
     }
 
@@ -182,8 +188,6 @@ public class Character : MonoBehaviour
         }
         else
             isOnGround = true;
-        Debug.Log("isOnGround" + isOnGround);
-
     }
 
     protected void EmittingEyeSight()
@@ -200,11 +204,9 @@ public class Character : MonoBehaviour
         if (eyeSightCenterPoint)
         {
             center = eyeSightCenterPoint.transform.position;
-            Debug.Log("True it has a center now");
             return center;
         }
         else
-            Debug.Log("The component has not been found");
 
         //Is a correct way?
         return Vector2.zero;
@@ -217,7 +219,6 @@ public class Character : MonoBehaviour
         if (eyeSightCenterPoint)
         {
             r = radius;
-            Debug.Log("True it has a radius now");
             return r;
         }
         else
@@ -235,18 +236,50 @@ public class Character : MonoBehaviour
             if (range.collider.gameObject.CompareTag("Hero"))
             {
                 Debug.Log("From this distance i can hit the Hero");
-                RaycastHit2D target = Physics2D.Linecast(transform.position, range.collider.gameObject.transform.position, ~(enemyLayer + bulletLayer));
-                Target = range.collider.transform;
+                //RaycastHit2D target = Physics2D.Linecast(transform.position, range.collider.gameObject.transform.position, ~(enemyLayer + bulletLayer));
+                target = range.collider.transform;
                 DrawTargetLine(range);
                 movementType = MovementType.MoveTowardsTarget;
-                //Move();
+
+                if (IsInRange(target))
+                {
+                    speed = 0;
+                    animator.SetFloat("flyingEye_speed", speed);
+                    Debug.Log("I found him");
+
+                    if (timeBtwShots <= 0)
+                    {
+                        Instantiate(bullet, transform.position, Quaternion.identity);
+                        timeBtwShots = startTimeBtwShots;
+                        Debug.Log("Shoot");
+                    }
+                    else
+                    {
+                        timeBtwShots -= Time.deltaTime;
+                    }
+                }
             }
             else if ((transform.position != initialPosition) && (movementType == MovementType.MoveTowardsTarget || movementType == MovementType.GoBackToInitialPosition))
             {
-                Debug.Log("I see something but it not the player is a: " + range.collider.gameObject.tag);
                 movementType = MovementType.GoBackToInitialPosition;
+
+                //Da rivedere con il prof 
+                speed = initialSpeed;
+                animator.SetFloat("flyingEye_speed", speed);
             }
         }
+    }
+
+    private bool IsInRange(Transform targ)
+    {
+        float distance = Vector2.Distance(transform.position, targ.position);
+        Debug.Log(distance);
+        if (distance < 2)
+        {
+            return true;
+        }
+        else
+            return false;
     }
 
     private void DrawRaysFromFeet()
@@ -254,7 +287,6 @@ public class Character : MonoBehaviour
         Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
         Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
     }
-
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
