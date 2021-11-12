@@ -76,7 +76,7 @@ public class Hero : Character
         {
             if (facingForward)
             {
-                transform.Rotate(0f, 180f, 0f);
+                transform.Rotate(0, 180f, 0f);
                 facingForward = false;
             }
         }

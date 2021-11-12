@@ -8,9 +8,12 @@ public class Character : MonoBehaviour
     [SerializeField] protected float direction;
     [SerializeField] protected int lifePoint;
     [SerializeField] protected float rayLenghtFromFeet;
+    [SerializeField] protected float radius;
+    [SerializeField] protected GameObject eyeSightCenterPoint;
 
-    public enum MovementType {PatrollingCheckingGround, HeroMovement};
+    public enum MovementType {PatrollingCheckingGround, HeroMovement, MoveTowardsTarget, GoBackToInitialPosition };
     [SerializeField] protected MovementType movementType;
+    protected MovementType initialMovementType;
 
     protected Animator animator;
     protected BoxCollider2D boxCollider2D;
@@ -18,6 +21,11 @@ public class Character : MonoBehaviour
     protected Vector2 rightFoot;
     protected bool isOnGround;
     protected bool facingForward;
+    protected Vector3 initialPosition;
+
+    private Transform Target;
+
+    protected Rigidbody2D rb;
 
     int ground = 1 << 6;
     int enemyLayer = 1 << 7;
@@ -65,6 +73,14 @@ public class Character : MonoBehaviour
                 HeroMovement();
                 break;
 
+            case MovementType.MoveTowardsTarget:
+                MoveTowardsTarget();
+                break;
+
+            case MovementType.GoBackToInitialPosition:
+                GoBackToInitialPosition();
+                break;
+
             default: break;
         }
     }
@@ -80,6 +96,23 @@ public class Character : MonoBehaviour
         {
             rb = GetComponent<Rigidbody2D>();
             rb.velocity = new Vector2(speed * direction, rb.velocity.y);
+        }
+    }
+    private void MoveTowardsTarget()
+    {
+        if (Target)
+        {
+            transform.position =  Vector2.MoveTowards(transform.position, Target.position, speed * Time.deltaTime);
+        }
+    }
+
+    private void GoBackToInitialPosition()
+    {
+        //Debug.Log("I am moving back to initialPosition: " + initialPosition);
+        transform.position = Vector2.MoveTowards(transform.position, initialPosition, speed * Time.deltaTime);
+        if(transform.position == initialPosition)
+        {
+            movementType = initialMovementType;
         }
     }
 
@@ -137,9 +170,12 @@ public class Character : MonoBehaviour
         {
             isOnGround = false;
            
-            if (gameObject.name == "Flying_Eye")
+            if ((gameObject.name == "Flying_Eye") && (movementType == MovementType.PatrollingCheckingGround))
             {
+                //Chiedere al prof come nantenere l'angolo dell z fermo in rotazione
+              
                 transform.Rotate(0f, 180f, 0f);
+           
                 direction = direction * -1;
             }
             //direction *= direction - 1;
@@ -149,50 +185,40 @@ public class Character : MonoBehaviour
         Debug.Log("isOnGround" + isOnGround);
 
     }
-    private void DrawRaysFromFeet()
-    {
-        Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
-        Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
-    }
-    
+
     protected void EmittingEyeSight()
     {
-        rangeOrigin = SetRange();
+        rangeOrigin = SetOrigin();
         rangeRadius = SetRadius();
         LookingForHeros();
     }
 
-    private Vector2 SetRange()
+    private Vector2 SetOrigin()
     {
         Vector3 center;
 
-        if ((boxCollider2D) && (direction == 1))
+        if (eyeSightCenterPoint)
         {
-            center = new Vector3 ((boxCollider2D.bounds.center.x + 2), transform.position.y, 0)  ;
+            center = eyeSightCenterPoint.transform.position;
             Debug.Log("True it has a center now");
             return center;
         }
-        else if ((boxCollider2D) && (direction == -1))
-        {
-            center = new Vector3((boxCollider2D.bounds.center.x - 2), transform.position.y, 0);
-            Debug.Log("True it has a center now");
-            return center;
-        }
-
         else
-        {
-            return Vector2.zero;
-        }
+            Debug.Log("The component has not been found");
+
+        //Is a correct way?
+        return Vector2.zero;
     }
 
     private float SetRadius()
     {
-        float radius;
-        if (boxCollider2D)
+        float r;
+
+        if (eyeSightCenterPoint)
         {
-            radius = Vector2.Distance(boxCollider2D.bounds.center, rightFoot) * 3;
+            r = radius;
             Debug.Log("True it has a radius now");
-            return radius;
+            return r;
         }
         else
         {
@@ -206,22 +232,27 @@ public class Character : MonoBehaviour
 
         if (range.collider != null)
         {
-            //if it is the main character we return true and we store the Transform of the MainChar into a local varibale called playerTargetTransform of the player
             if (range.collider.gameObject.CompareTag("Hero"))
             {
                 Debug.Log("From this distance i can hit the Hero");
-                RaycastHit2D target = Physics2D.Linecast(rangeOrigin, range.collider.gameObject.transform.position, ~(enemyLayer + bulletLayer));
-                Debug.DrawLine(rangeOrigin, range.collider.gameObject.transform.position, Color.yellow);
-
-
-                //return true;
+                RaycastHit2D target = Physics2D.Linecast(transform.position, range.collider.gameObject.transform.position, ~(enemyLayer + bulletLayer));
+                Target = range.collider.transform;
+                DrawTargetLine(range);
+                movementType = MovementType.MoveTowardsTarget;
+                //Move();
             }
-            else
+            else if ((transform.position != initialPosition) && (movementType == MovementType.MoveTowardsTarget || movementType == MovementType.GoBackToInitialPosition))
             {
                 Debug.Log("I see something but it not the player is a: " + range.collider.gameObject.tag);
-                //return false;
+                movementType = MovementType.GoBackToInitialPosition;
             }
         }
+    }
+
+    private void DrawRaysFromFeet()
+    {
+        Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
+        Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
     }
 
     private void OnDrawGizmos()
@@ -229,4 +260,10 @@ public class Character : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(rangeOrigin, rangeRadius);
     }
+
+    private void DrawTargetLine(RaycastHit2D r)
+    {
+        Debug.DrawLine(transform.position, r.collider.gameObject.transform.position, Color.yellow);
+    }
+
 }
