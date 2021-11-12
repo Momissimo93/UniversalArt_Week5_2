@@ -18,7 +18,13 @@ public class Character : MonoBehaviour
     protected Vector2 rightFoot;
     protected bool isOnGround;
     protected bool facingForward;
-    protected int ground = 1 << 6;
+
+    int ground = 1 << 6;
+    int enemyLayer = 1 << 7;
+    int bulletLayer = 1 << 8;
+
+    float rangeRadius;
+    Vector3 rangeOrigin;
 
     void Start()
     {
@@ -127,7 +133,6 @@ public class Character : MonoBehaviour
 
     private void CheckIfGround(RaycastHit2D lFRays, RaycastHit2D rFRays)
     {
-
         if ((!lFRays) || (!rFRays))
         {
             isOnGround = false;
@@ -148,5 +153,80 @@ public class Character : MonoBehaviour
     {
         Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
         Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
+    }
+    
+    protected void EmittingEyeSight()
+    {
+        rangeOrigin = SetRange();
+        rangeRadius = SetRadius();
+        LookingForHeros();
+    }
+
+    private Vector2 SetRange()
+    {
+        Vector3 center;
+
+        if ((boxCollider2D) && (direction == 1))
+        {
+            center = new Vector3 ((boxCollider2D.bounds.center.x + 2), transform.position.y, 0)  ;
+            Debug.Log("True it has a center now");
+            return center;
+        }
+        else if ((boxCollider2D) && (direction == -1))
+        {
+            center = new Vector3((boxCollider2D.bounds.center.x - 2), transform.position.y, 0);
+            Debug.Log("True it has a center now");
+            return center;
+        }
+
+        else
+        {
+            return Vector2.zero;
+        }
+    }
+
+    private float SetRadius()
+    {
+        float radius;
+        if (boxCollider2D)
+        {
+            radius = Vector2.Distance(boxCollider2D.bounds.center, rightFoot) * 3;
+            Debug.Log("True it has a radius now");
+            return radius;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private void LookingForHeros()
+    {
+        RaycastHit2D range = Physics2D.CircleCast(rangeOrigin, rangeRadius, Vector2.zero, 1, ~(enemyLayer + bulletLayer));
+
+        if (range.collider != null)
+        {
+            //if it is the main character we return true and we store the Transform of the MainChar into a local varibale called playerTargetTransform of the player
+            if (range.collider.gameObject.CompareTag("Hero"))
+            {
+                Debug.Log("From this distance i can hit the Hero");
+                RaycastHit2D target = Physics2D.Linecast(rangeOrigin, range.collider.gameObject.transform.position, ~(enemyLayer + bulletLayer));
+                Debug.DrawLine(rangeOrigin, range.collider.gameObject.transform.position, Color.yellow);
+
+
+                //return true;
+            }
+            else
+            {
+                Debug.Log("I see something but it not the player is a: " + range.collider.gameObject.tag);
+                //return false;
+            }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(rangeOrigin, rangeRadius);
     }
 }

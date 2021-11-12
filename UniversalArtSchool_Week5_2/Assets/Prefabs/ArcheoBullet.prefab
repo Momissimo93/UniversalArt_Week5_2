@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9102820430853322600}
   - component: {fileID: 8683895509457828549}
   - component: {fileID: 8903576285286309352}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ArcheoBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}

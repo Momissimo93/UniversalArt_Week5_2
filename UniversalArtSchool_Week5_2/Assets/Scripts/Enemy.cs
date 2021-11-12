@@ -19,10 +19,11 @@ public class Enemy : Character
     void Update()
     {
         EmittingRaysFromFeet();
+        Move();
+        EmittingEyeSight();
     }
 
     private void FixedUpdate()
     {
-        Move();
     }
 }
