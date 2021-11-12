@@ -7,21 +7,44 @@ public class Character : MonoBehaviour
     [SerializeField] protected float speed;
     [SerializeField] protected float direction;
     [SerializeField] protected int lifePoint;
+    [SerializeField] protected float rayLenghtFromFeet;
 
     public enum MovementType {PatrollingCheckingGround, HeroMovement};
     [SerializeField] protected MovementType movementType;
 
     protected Animator animator;
-    // Start is called before the first frame update
+    protected BoxCollider2D boxCollider2D;
+    protected Vector2 leftFoot;
+    protected Vector2 rightFoot;
+    protected bool isOnGround;
+    protected bool facingForward;
+    protected int ground = 1 << 6;
+
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    protected void GetAnimator()
+    {
+        if (GetComponent<Animator>())
+        {
+            animator = gameObject.GetComponent<Animator>();
+        }
+    }
+
+    protected void GetBoxCollider()
+    {
+        if (GetComponent<BoxCollider2D>())
+        {
+            boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
+        }
     }
 
     public void Move()
@@ -41,7 +64,7 @@ public class Character : MonoBehaviour
     }
     public void PatrollingCheckingGround()
     {
-
+        transform.position = new Vector2(transform.position.x + (speed * direction * Time.deltaTime), transform.position.y);
     }
     public void HeroMovement()
     {
@@ -60,7 +83,6 @@ public class Character : MonoBehaviour
 
         if (GetComponent<Rigidbody2D>())
         {
-            Debug.Log("StopMoving");
             rb = GetComponent<Rigidbody2D>();
             rb.velocity = new Vector2(rb.velocity.x * 0, rb.velocity.y);
         }
@@ -89,5 +111,42 @@ public class Character : MonoBehaviour
     void Die()
     {
         Destroy(gameObject);
+    }
+
+    protected void EmittingRaysFromFeet()
+    {
+        leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
+        rightFoot = new Vector2(boxCollider2D.bounds.max.x, boxCollider2D.bounds.min.y);
+
+        RaycastHit2D leftFootRays = Physics2D.Raycast(leftFoot, Vector2.down, rayLenghtFromFeet, ground);
+        RaycastHit2D rightFootRays = Physics2D.Raycast(rightFoot, Vector2.down, rayLenghtFromFeet, ground);
+
+        CheckIfGround(leftFootRays, rightFootRays);
+        DrawRaysFromFeet();
+    }
+
+    private void CheckIfGround(RaycastHit2D lFRays, RaycastHit2D rFRays)
+    {
+
+        if ((!lFRays) || (!rFRays))
+        {
+            isOnGround = false;
+           
+            if (gameObject.name == "Flying_Eye")
+            {
+                transform.Rotate(0f, 180f, 0f);
+                direction = direction * -1;
+            }
+            //direction *= direction - 1;
+        }
+        else
+            isOnGround = true;
+        Debug.Log("isOnGround" + isOnGround);
+
+    }
+    private void DrawRaysFromFeet()
+    {
+        Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
+        Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
     }
 }

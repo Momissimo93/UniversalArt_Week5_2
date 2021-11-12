@@ -5,43 +5,27 @@ using UnityEngine;
 public class Hero : Character
 {
     [SerializeField] int jumpForce;
-    [SerializeField] float raylenght;
     [SerializeField] GameObject bullet;
     [SerializeField] Transform firePoint;
 
-    private bool facingForward = true;
     private bool isFiring;
-    private bool isOnGround;
     private float speedLocalReference;
-
-    int ground = 1 << 6;
-    BoxCollider2D boxCollider2D;
-
-    protected Vector2 leftFoot;
-    protected Vector2 rightFoot;
 
     private void Awake()
     {
-        if (GetComponent<BoxCollider2D>())
-        {
-            boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
-        }
+        GetAnimator();
+        GetBoxCollider();
     }
     void Start()
     {
-        if (GetComponent<Animator>())
-        {
-            animator = gameObject.GetComponent<Animator>();
-            Debug.Log("animator");
-        }
-
+        facingForward = true;
         speedLocalReference = speed;
     }
 
     void Update()
     {
         checkIfButtonDownPressed();
-        EmittingRays();
+        EmittingRaysFromFeet();
     }
 
     private void FixedUpdate()
@@ -104,33 +88,6 @@ public class Hero : Character
                 facingForward = true;
             }
         }
-    }
-    void EmittingRays()
-    {
-        leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
-        rightFoot = new Vector2(boxCollider2D.bounds.max.x, boxCollider2D.bounds.min.y);
-
-        RaycastHit2D leftFootRays = Physics2D.Raycast(leftFoot, Vector2.down, raylenght, ground);
-        RaycastHit2D rightFootRays = Physics2D.Raycast(rightFoot, Vector2.down, raylenght, ground);
-
-        checkIfGround(leftFootRays, rightFootRays);
-        DrawRay();
-    }
-
-    void checkIfGround(RaycastHit2D lFRays, RaycastHit2D rFRays)
-    {
-        if ((lFRays) || (rFRays))
-        {
-            isOnGround = true;
-        }
-        else
-            isOnGround = false;
-    }
-
-    void DrawRay()
-    {
-        Debug.DrawRay(leftFoot, Vector2.down * 1f, Color.blue);
-        Debug.DrawRay(rightFoot, Vector2.down * 1f, Color.blue);
     }
 
     void Shoot(GameObject b, Transform spwaningBulletPosition)

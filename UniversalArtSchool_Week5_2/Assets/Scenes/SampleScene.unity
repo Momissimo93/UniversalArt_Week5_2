@@ -489,8 +489,8 @@ GameObject:
   - component: {fileID: 866048049}
   - component: {fileID: 866048048}
   - component: {fileID: 866048047}
-  - component: {fileID: 866048050}
   - component: {fileID: 866048051}
+  - component: {fileID: 866048050}
   m_Layer: 0
   m_Name: Flying_Eye
   m_TagString: Untagged
@@ -577,7 +577,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 866048046}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.28, y: -3.79, z: 0}
+  m_LocalPosition: {x: 0.7, y: -1.492, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -592,12 +592,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 866048046}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6c9c442ccfb21642b8b9f5f0e71b87e, type: 3}
+  m_Script: {fileID: 11500000, guid: 0daace25f9384e143b6d4085e57e940f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 0
-  direction: 0
+  speed: 1
+  direction: 1
   lifePoint: 0
+  rayLenghtFromFeet: 0.3
   movementType: 0
 --- !u!61 &866048051
 BoxCollider2D:
@@ -1192,9 +1193,9 @@ MonoBehaviour:
   speed: 2
   direction: 1
   lifePoint: 2
+  rayLenghtFromFeet: 0.1
   movementType: 1
   jumpForce: 4
-  raylenght: 0.1
   bullet: {fileID: 7550575404710190775, guid: b4fc3438c3b124d4d810eda4de448d59, type: 3}
   firePoint: {fileID: 1414162262}
 --- !u!50 &1406833084
