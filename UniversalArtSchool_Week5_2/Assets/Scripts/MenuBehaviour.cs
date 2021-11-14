@@ -5,11 +5,12 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 //using TMPro;
 
+//This class will handle direclty with the menu, but the value are send to the GameMenager
 
 public class MenuBehaviour : MonoBehaviour
 {
-    bool isSomethingSaved;
 
+    bool isSomethingSaved;
     [SerializeField] private GameObject noSavedGameDialog = null;
 
     [SerializeField] Slider volumeSlider = null;
@@ -37,6 +38,7 @@ public class MenuBehaviour : MonoBehaviour
         GameManager.LoadScene("Level1");
     }
 
+    //This was done to experiment with script interaction. But i have mostly used Unity native methods to open and close menu windows
     public void LoadGameYes()
     {
         if (isSomethingSaved)
@@ -60,6 +62,8 @@ public class MenuBehaviour : MonoBehaviour
         GameManager.SetMasterVolume(volume);
         volumeTextValue.text = volume.ToString("0.0");
     }
+
+    // I simply follow the instructions that are in the Unity API
     public void SetScreenResolutions(Dropdown mD)
     {
         screenRosolutions = Screen.resolutions;
@@ -78,6 +82,7 @@ public class MenuBehaviour : MonoBehaviour
                 currentResolutionIndex = i;
             }
         }
+
         m_Dropdown.AddOptions(m_DropOptions);
         m_Dropdown.value = currentResolutionIndex;
         m_Dropdown.RefreshShownValue();

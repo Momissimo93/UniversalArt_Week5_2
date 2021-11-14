@@ -20,12 +20,11 @@ public class ArcheoBullet : MonoBehaviour
     void OnTriggerEnter2D(Collider2D hitInfo)
     {
         Character character = hitInfo.GetComponent<Character>();
-        if (character != null)
+        if (character != null && character.name != "Hero")
         {
             character.TakeDamage(1);
+            Destroy(this.gameObject);
         }
-
-        Destroy(gameObject);
     }
 
 }

@@ -20,6 +20,14 @@ public class Hero : Character
     {
         facingForward = true;
         speedLocalReference = speed;
+
+        //maxLifePoints can be set and can be see in the inspector
+        //Initially the player lifePoints will be equal to that of the maxLifePoints
+        //The healthbar is then updated
+
+        lifePoints = maxLifePoints;
+        healthBar.SetMaxHealth(maxLifePoints);
+        healthBar.SetHealth(maxLifePoints);
     }
 
     void Update()

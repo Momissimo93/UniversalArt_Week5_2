@@ -16,7 +16,12 @@ public class Enemy : Character
         initialPosition = transform.position;
         initialMovementType = movementType;
         initialSpeed = speed;
+
         timeBtwShots = startTimeBtwShots;
+       
+        lifePoints = maxLifePoints;
+        healthBar.SetMaxHealth(maxLifePoints);
+        healthBar.SetHealth(maxLifePoints);
     }
     // Update is called once per frame
     void Update()
@@ -28,5 +33,6 @@ public class Enemy : Character
 
     private void FixedUpdate()
     {
+
     }
 }

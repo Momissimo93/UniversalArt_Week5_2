@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
 
+
+//The GameManager takes value from the MenuBehaviour class and update the game: mechanics, contents and functionalities
 public class GameManager : MonoBehaviour
 {
     public static AudioSource master;
@@ -29,6 +31,7 @@ public class GameManager : MonoBehaviour
         Application.Quit();
     }
 
+    //Returns the base 20 logarithm of a specified number as the gain is in Db
     public static void SetMasterVolume(float volume)
     {
         master.outputAudioMixerGroup.audioMixer.SetFloat("Volume", Mathf.Log10(volume) * 20) ;

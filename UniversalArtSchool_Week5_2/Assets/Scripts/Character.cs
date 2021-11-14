@@ -4,44 +4,57 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
+
     [SerializeField] protected float speed;
     [SerializeField] protected float direction;
-    [SerializeField] protected int lifePoint;
+
+    //The max life points. They can be set in the inspector 
+    [SerializeField] protected int maxLifePoints;
     [SerializeField] protected float rayLenghtFromFeet;
     [SerializeField] protected float radius;
     [SerializeField] protected GameObject eyeSightCenterPoint;
     [SerializeField] protected GameObject bullet;
     [SerializeField] protected Transform firePoint;
+    [SerializeField] protected HealthBarBehaviour healthBar;
 
+    //Variable used to set the fire rate of the enemy
     private protected float timeBtwShots;
     public float startTimeBtwShots;
 
+    //I find it a good system to change the behaviour of an enemy using an enum 
     public enum MovementType {PatrollingCheckingGround, HeroMovement, MoveTowardsTarget, GoBackToInitialPosition };
     [SerializeField] protected MovementType movementType;
     protected MovementType initialMovementType;
 
     protected Animator animator;
-    protected BoxCollider2D boxCollider2D;
-    protected Vector2 leftFoot;
-    protected Vector2 rightFoot;
-    protected bool isOnGround;
-    protected bool facingForward;
-    protected Vector3 initialPosition;
-    protected float initialSpeed;
-    public Transform target;
 
+    protected BoxCollider2D boxCollider2D;
     protected Rigidbody2D rb;
 
-    int ground = 1 << 6;
-    int enemyLayer = 1 << 7;
-    int bulletLayer = 1 << 8;
+    protected Vector2 leftFoot;
+    protected Vector2 rightFoot;
+    protected Vector3 initialPosition;
 
-    float rangeRadius;
-    Vector3 rangeOrigin;
+    protected bool isOnGround;
+    protected bool facingForward;
+
+    private float rangeRadius;
+    private Vector3 rangeOrigin;
+
+    protected float initialSpeed;
+
+    public Transform target;
+
+    private int ground = 1 << 6;
+    private int enemyLayer = 1 << 7;
+    private int bulletLayer = 1 << 8;
+
+    //The current life points 
+    private protected int lifePoints;
 
     void Start()
     {
-        //timeBtwShots = startTimeBtwShots;
+
     }
 
     // Update is called once per frame
@@ -121,6 +134,7 @@ public class Character : MonoBehaviour
         }
     }
 
+    //It does not work 
     private protected void StopMoving()
     {
         Rigidbody2D rb;
@@ -144,10 +158,16 @@ public class Character : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        lifePoint -= damage;
-        if (lifePoint <= 0)
+        Debug.Log("LifePoints = " + lifePoints);
+
+        //The lifePoints dimisnishes according to the damage taken and the healthbar is updated
+        lifePoints -= damage;
+        healthBar.SetHealth(lifePoints);
+
+        //We check if we still have life
+        if (lifePoints <= 0)
         {
-            Die();
+            Destroy(gameObject);
         }
     }
 
@@ -233,7 +253,7 @@ public class Character : MonoBehaviour
         {
             if (range.collider.gameObject.CompareTag("Hero"))
             {
-                Debug.Log("From this distance i can hit the Hero");
+                //Debug.Log("From this distance i can hit the Hero");
                 //RaycastHit2D target = Physics2D.Linecast(transform.position, range.collider.gameObject.transform.position, ~(enemyLayer + bulletLayer));
                 target = range.collider.transform;
                 DrawTargetLine(range);
@@ -243,13 +263,13 @@ public class Character : MonoBehaviour
                 {
                     speed = 0;
                     animator.SetFloat("flyingEye_speed", speed);
-                    Debug.Log("I found him");
+                    //Debug.Log("I found him");
 
                     if (timeBtwShots <= 0)
                     {
                         Instantiate(bullet, transform.position, Quaternion.identity);
                         timeBtwShots = startTimeBtwShots;
-                        Debug.Log("Shoot");
+                        //Debug.Log("Shoot");
                     }
                     else
                     {
