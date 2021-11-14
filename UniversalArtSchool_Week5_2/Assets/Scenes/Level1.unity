@@ -541,7 +541,7 @@ MonoBehaviour:
   eyeSightCenterPoint: {fileID: 541254446}
   bullet: {fileID: 4257045947112957234, guid: 57ecce7865e90314ea4672f844314e90, type: 3}
   firePoint: {fileID: 539547731}
-  startTimeBtwShots: 2
+  startTimeBtwShots: 0.5
   movementType: 0
   target: {fileID: 0}
 --- !u!61 &866048051

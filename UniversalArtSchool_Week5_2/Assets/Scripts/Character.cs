@@ -16,7 +16,6 @@ public class Character : MonoBehaviour
     private protected float timeBtwShots;
     public float startTimeBtwShots;
 
-
     public enum MovementType {PatrollingCheckingGround, HeroMovement, MoveTowardsTarget, GoBackToInitialPosition };
     [SerializeField] protected MovementType movementType;
     protected MovementType initialMovementType;
@@ -132,7 +131,6 @@ public class Character : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x * 0, rb.velocity.y);
         }
     }
-
     private protected void Jump(int jF)
     {
         int jumpForce = jF;
@@ -258,6 +256,12 @@ public class Character : MonoBehaviour
                         timeBtwShots -= Time.deltaTime;
                     }
                 }
+                else if (!IsInRange(target))
+                {
+                    speed = initialSpeed;
+                    animator.SetFloat("flyingEye_speed", speed);
+                    movementType = MovementType.MoveTowardsTarget;
+                }
             }
             else if ((transform.position != initialPosition) && (movementType == MovementType.MoveTowardsTarget || movementType == MovementType.GoBackToInitialPosition))
             {
@@ -273,7 +277,7 @@ public class Character : MonoBehaviour
     private bool IsInRange(Transform targ)
     {
         float distance = Vector2.Distance(transform.position, targ.position);
-        Debug.Log(distance);
+        //Debug.Log(distance);
         if (distance < 2)
         {
             return true;
