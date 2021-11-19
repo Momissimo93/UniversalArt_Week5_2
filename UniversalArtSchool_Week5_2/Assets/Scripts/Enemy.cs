@@ -22,13 +22,19 @@ public class Enemy : Character
         lifePoints = maxLifePoints;
         healthBar.SetMaxHealth(maxLifePoints);
         healthBar.SetHealth(maxLifePoints);
+
+        //           patrolling = true;
     }
     // Update is called once per frame
     void Update()
     {
         EmittingRaysFromFeet();
+        EnemyBehaviour();
+
+        if (movementType != MovementType.GoBackToInitialPosition)
+            EmittingEyeSight();
+
         Move();
-        EmittingEyeSight();
     }
 
     private void FixedUpdate()

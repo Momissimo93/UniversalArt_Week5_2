@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-
     [SerializeField] protected float speed;
     [SerializeField] protected float direction;
 
@@ -22,7 +21,7 @@ public class Character : MonoBehaviour
     public float startTimeBtwShots;
 
     //I find it a good system to change the behaviour of an enemy using an enum 
-    public enum MovementType {PatrollingCheckingGround, HeroMovement, MoveTowardsTarget, GoBackToInitialPosition };
+    public enum MovementType {Patrolling, HeroMovement, MoveTowardsTarget, GoBackToInitialPosition, StopMoving};
     [SerializeField] protected MovementType movementType;
     protected MovementType initialMovementType;
 
@@ -37,6 +36,8 @@ public class Character : MonoBehaviour
 
     protected bool isOnGround;
     protected bool facingForward;
+    protected bool goingtBackToInitialPos;
+    protected bool directionChange = false;
 
     private float rangeRadius;
     private Vector3 rangeOrigin;
@@ -48,20 +49,10 @@ public class Character : MonoBehaviour
     private int ground = 1 << 6;
     private int enemyLayer = 1 << 7;
     private int bulletLayer = 1 << 8;
+    private int heroLayer = 1 << 9;
 
     //The current life points 
     private protected int lifePoints;
-
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     protected void GetAnimator()
     {
@@ -70,7 +61,6 @@ public class Character : MonoBehaviour
             animator = gameObject.GetComponent<Animator>();
         }
     }
-
     protected void GetBoxCollider()
     {
         if (GetComponent<BoxCollider2D>())
@@ -78,104 +68,6 @@ public class Character : MonoBehaviour
             boxCollider2D = gameObject.GetComponent<BoxCollider2D>();
         }
     }
-
-    public void Move()
-    {
-        switch (movementType)
-        {
-            case MovementType.PatrollingCheckingGround:
-                PatrollingCheckingGround();
-                break;
-
-            case MovementType.HeroMovement:
-                HeroMovement();
-                break;
-
-            case MovementType.MoveTowardsTarget:
-                MoveTowardsTarget();
-                break;
-
-            case MovementType.GoBackToInitialPosition:
-                GoBackToInitialPosition();
-                break;
-
-            default: break;
-        }
-    }
-    public void PatrollingCheckingGround()
-    {
-        transform.position = new Vector2(transform.position.x + (speed * direction * Time.deltaTime), transform.position.y);
-    }
-    public void HeroMovement()
-    {
-        Rigidbody2D rb;
-
-        if(GetComponent<Rigidbody2D>())
-        {
-            rb = GetComponent<Rigidbody2D>();
-            rb.velocity = new Vector2(speed * direction, rb.velocity.y);
-        }
-    }
-    private void MoveTowardsTarget()
-    {
-        if (target)
-        {
-            transform.position =  Vector2.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
-        }
-    }
-
-    private void GoBackToInitialPosition()
-    {
-        //Debug.Log("I am moving back to initialPosition: " + initialPosition);
-        transform.position = Vector2.MoveTowards(transform.position, initialPosition, speed * Time.deltaTime);
-        if(transform.position == initialPosition)
-        {
-            movementType = initialMovementType;
-        }
-    }
-
-    //It does not work 
-    private protected void StopMoving()
-    {
-        Rigidbody2D rb;
-
-        if (GetComponent<Rigidbody2D>())
-        {
-            rb = GetComponent<Rigidbody2D>();
-            rb.velocity = new Vector2(rb.velocity.x * 0, rb.velocity.y);
-        }
-    }
-    private protected void Jump(int jF)
-    {
-        int jumpForce = jF;
-        Rigidbody2D rb;
-        if (GetComponent<Rigidbody2D>())
-        {
-            rb = GetComponent<Rigidbody2D>();
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-        }
-    }
-
-    public void TakeDamage(int damage)
-    {
-        Debug.Log("LifePoints = " + lifePoints);
-
-        //The lifePoints dimisnishes according to the damage taken and the healthbar is updated
-        lifePoints -= damage;
-        healthBar.SetHealth(lifePoints);
-
-        //We check if we still have life
-        if (lifePoints <= 0)
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    void Die()
-    {
-        Destroy(gameObject);
-    }
-
     protected void EmittingRaysFromFeet()
     {
         leftFoot = new Vector2(boxCollider2D.bounds.min.x, boxCollider2D.bounds.min.y);
@@ -187,19 +79,18 @@ public class Character : MonoBehaviour
         CheckIfGround(leftFootRays, rightFootRays);
         DrawRaysFromFeet();
     }
-
     private void CheckIfGround(RaycastHit2D lFRays, RaycastHit2D rFRays)
     {
         if ((!lFRays) || (!rFRays))
         {
             isOnGround = false;
-           
-            if ((gameObject.name == "Flying_Eye") && (movementType == MovementType.PatrollingCheckingGround))
+
+            if ((gameObject.name == "Flying_Eye") && (movementType == MovementType.Patrolling))
             {
                 //Chiedere al prof come nantenere l'angolo dell z fermo in rotazione
-              
+
                 transform.Rotate(0f, 180f, 0f);
-           
+
                 direction = direction * -1;
             }
             //direction *= direction - 1;
@@ -207,14 +98,12 @@ public class Character : MonoBehaviour
         else
             isOnGround = true;
     }
-
     protected void EmittingEyeSight()
     {
         rangeOrigin = SetOrigin();
         rangeRadius = SetRadius();
         LookingForHeros();
     }
-
     private Vector2 SetOrigin()
     {
         Vector3 center;
@@ -225,11 +114,9 @@ public class Character : MonoBehaviour
             return center;
         }
         else
-
-        //Is a correct way?
-        return Vector2.zero;
+            //Is a correct way?
+            return Vector2.zero;
     }
-
     private float SetRadius()
     {
         float r;
@@ -244,12 +131,253 @@ public class Character : MonoBehaviour
             return 0;
         }
     }
+    public void Move()
+    {
+        switch (movementType)
+        {
+            case MovementType.Patrolling:
+                Patrolling();
+                break;
 
+            case MovementType.HeroMovement:
+                HeroMovement();
+                break;
+
+            case MovementType.MoveTowardsTarget:
+                MoveTowardsTarget();
+                break;
+
+            case MovementType.GoBackToInitialPosition:
+                GoBackToInitialPosition();
+                break;
+
+            case MovementType.StopMoving:
+                StopMoving();
+                break;
+
+            default: break;
+        }
+    }
+    private protected void Jump(int jF)
+    {
+        int jumpForce = jF;
+        Rigidbody2D rb;
+        if (GetComponent<Rigidbody2D>())
+        {
+            rb = GetComponent<Rigidbody2D>();
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        }
+    }
+    public void HeroMovement()
+    {
+        Rigidbody2D rb;
+
+        if (GetComponent<Rigidbody2D>())
+        {
+            rb = GetComponent<Rigidbody2D>();
+            rb.velocity = new Vector2(speed * direction, rb.velocity.y);
+        }
+    }
+    public void Patrolling()
+    {
+        //Debug.Log(movementType);
+        transform.position = new Vector2(transform.position.x + (speed * direction * Time.deltaTime), transform.position.y);
+
+    }
+    private void MoveTowardsTarget()
+    {
+        speed = initialSpeed;
+        if (target)
+        {
+            transform.position =  Vector2.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
+        }
+    }
+    private void GoBackToInitialPosition()
+    {
+        transform.position = Vector2.MoveTowards(transform.position, initialPosition, speed * Time.deltaTime);
+        if(transform.position == initialPosition)
+        {
+            Debug.Log("I back at initial position");
+            movementType = initialMovementType;
+        }
+    }
+    private protected void StopMoving()
+    {
+        speed = 0;
+        Rigidbody2D rb;
+
+        if (GetComponent<Rigidbody2D>())
+        {
+            rb = GetComponent<Rigidbody2D>();
+            rb.velocity = new Vector2(rb.velocity.x * speed, rb.velocity.y);
+        }
+    }
+    public void TakeDamage(int damage)
+    {
+        Debug.Log("LifePoints = " + lifePoints);
+
+        //The lifePoints dimisnishes according to the damage taken and the healthbar is updated
+        lifePoints -= damage;
+        healthBar.SetHealth(lifePoints);
+
+        //We check if we still have life
+        if (lifePoints <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
+    void Die()
+    {
+        Destroy(gameObject);
+    }
+    protected void EnemyBehaviour()
+    {
+        if (LookForTarget() && !IsInRange(target))
+        {
+            if (speed != initialSpeed)
+            {
+                speed = initialSpeed;
+                animator.SetFloat("flyingEye_speed", speed);
+            }
+            movementType = MovementType.MoveTowardsTarget;
+        }
+        else if (LookForTarget() && IsInRange(target))
+        {
+            movementType = MovementType.StopMoving;
+            Attack();
+        }
+        else if (movementType != MovementType.Patrolling)
+        {
+            if (speed != initialSpeed)
+            {
+                speed = initialSpeed;
+                animator.SetFloat("flyingEye_speed", speed);
+            }
+
+            movementType = MovementType.GoBackToInitialPosition;
+        }
+        else
+            movementType = MovementType.Patrolling;
+            
+    }
+    private bool LookForTarget()
+    {
+        RaycastHit2D range = Physics2D.CircleCast(rangeOrigin, rangeRadius, Vector2.zero, 1, heroLayer);
+
+        if(range)
+        {
+            if (range.collider.gameObject.CompareTag("Hero"))
+            {
+                target = range.collider.transform;
+                return true;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        return false;
+    }
+    private bool IsInRange(Transform targ)
+    {
+        RaycastHit2D targetLine = Physics2D.Linecast(transform.position, targ.position, (heroLayer));
+        DrawTargetLine(targetLine);
+
+        float distance = Vector2.Distance(transform.position, targ.position);
+        //Debug.Log(distance);
+        if (distance < 2)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+    private void Attack()
+    {
+        animator.SetFloat("flyingEye_speed", speed);
+
+        if (timeBtwShots <= 0)
+        {
+            Instantiate(bullet, transform.position, Quaternion.identity);
+            timeBtwShots = startTimeBtwShots;
+            //Debug.Log("Shoot");
+        }
+        else
+        {
+            timeBtwShots -= Time.deltaTime;
+        }
+    }
+    private void DrawRaysFromFeet()
+    {
+        Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
+        Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
+    }
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(rangeOrigin, rangeRadius);
+    }
+    private void DrawTargetLine(RaycastHit2D r)
+    {
+
+        Debug.DrawLine(transform.position, r.collider.gameObject.transform.position, Color.yellow);
+    }
+    //Old methods 
     private void LookingForHeros()
     {
-        RaycastHit2D range = Physics2D.CircleCast(rangeOrigin, rangeRadius, Vector2.zero, 1, ~(enemyLayer + bulletLayer));
+        //Aggiungi il layer ground
+        //RaycastHit2D range = Physics2D.CircleCast(rangeOrigin, rangeRadius, Vector2.zero, 1, ~(enemyLayer + bulletLayer));
+        //RaycastHit2D range = Physics2D.CircleCast(rangeOrigin, rangeRadius, Vector2.zero, 1, (Hero)); // This is the best way, remeber to create the layer of the hero, like that he will only lookl into the hero layer and get read of all the rest
+        //RaycastHit2D [] arrayOfElements = Physics2D.CircleCastAll(rangeOrigin, rangeRadius, Vector2.zero, 1, ~(enemyLayer + bulletLayer));
 
-        if (range.collider != null)
+        /*for (int i = 0; i < arrayOfElements.Length; i ++)
+        {
+            if(arrayOfElements [i].collider.gameObject.GetComponent<Hero>())
+            {
+                target = arrayOfElements[i].collider.transform;
+                DrawTargetLine(arrayOfElements[i]);
+                movementType = MovementType.MoveTowardsTarget;
+                //goingtBackToInitialPos = false;
+
+                if (IsInRange(target))
+                {
+                    speed = 0;
+                    animator.SetFloat("flyingEye_speed", speed);
+                    //Debug.Log("I found him");
+
+                    if (timeBtwShots <= 0)
+                    {
+                        Instantiate(bullet, transform.position, Quaternion.identity);
+                        timeBtwShots = startTimeBtwShots;
+                        //Debug.Log("Shoot");
+                    }
+                    else
+                    {
+                        timeBtwShots -= Time.deltaTime;
+                    }
+                }
+                else if (!IsInRange(target))
+                {
+                    speed = initialSpeed;
+                    animator.SetFloat("flyingEye_speed", speed);
+                    movementType = MovementType.MoveTowardsTarget;
+                }
+            }
+            else
+            {
+                goingtBackToInitialPos = true;
+                //if (goingBackmovementType = MovementType.GoBackToInitialPosition;
+                goingtBackToInitialPos = true;
+                //Da rivedere con il prof 
+                speed = initialSpeed;
+                animator.SetFloat("flyingEye_speed", speed);
+            }
+
+        }*/
+
+        /*
+        if (range)
         {
             if (range.collider.gameObject.CompareTag("Hero"))
             {
@@ -291,35 +419,6 @@ public class Character : MonoBehaviour
                 speed = initialSpeed;
                 animator.SetFloat("flyingEye_speed", speed);
             }
-        }
+        }*/
     }
-
-    private bool IsInRange(Transform targ)
-    {
-        float distance = Vector2.Distance(transform.position, targ.position);
-        //Debug.Log(distance);
-        if (distance < 2)
-        {
-            return true;
-        }
-        else
-            return false;
-    }
-
-    private void DrawRaysFromFeet()
-    {
-        Debug.DrawRay(leftFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
-        Debug.DrawRay(rightFoot, Vector2.down * rayLenghtFromFeet, Color.blue);
-    }
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(rangeOrigin, rangeRadius);
-    }
-
-    private void DrawTargetLine(RaycastHit2D r)
-    {
-        Debug.DrawLine(transform.position, r.collider.gameObject.transform.position, Color.yellow);
-    }
-
 }

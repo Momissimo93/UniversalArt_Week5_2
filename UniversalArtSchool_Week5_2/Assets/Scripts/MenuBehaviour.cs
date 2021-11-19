@@ -59,7 +59,8 @@ public class MenuBehaviour : MonoBehaviour
 
     public void SetVolume(float volume)
     {
-        GameManager.SetMasterVolume(volume);
+        //GameManager.SetMasterVolume(volume);
+        GameManager.ChangeVolume(volume);
         volumeTextValue.text = volume.ToString("0.0");
     }
 
@@ -76,7 +77,9 @@ public class MenuBehaviour : MonoBehaviour
         for (int i = 0; i < screenRosolutions.Length; i++)
         {
             string option = screenRosolutions[i].width + " x " + screenRosolutions[i].height;
+
             m_DropOptions.Add(option);
+
             if(screenRosolutions[i].width == Screen.width && screenRosolutions[i].height == Screen.height)
             {
                 currentResolutionIndex = i;
